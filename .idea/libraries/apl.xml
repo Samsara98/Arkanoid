@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="apl">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/arkanoid/lib/apl.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
