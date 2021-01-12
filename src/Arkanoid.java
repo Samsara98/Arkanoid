@@ -267,9 +267,9 @@ public class Arkanoid extends GraphicsProgram {
                 }
                 if ((ballX - obj.getX() > BRICKSCORNER) & (-ballX + BRICK_WIDTH + obj.getX() > BRICKSCORNER)) {
                     if (ballY - obj.getY() - 0.5 * BRICK_HEIGHT > 0) { //碰到砖块下方
-                        vy = VELOCITY_Y;
+                        vy = -vy;
                     } else {  //碰到砖块上方
-                        vy = -VELOCITY_Y;
+                        vy = -vy;
                     }
                 } else if ((obj.getY() + BRICKSCORNER < ballY) & (obj.getY() + BRICK_HEIGHT - BRICKSCORNER > ballY)) { //碰到砖块侧面
                     vx = -vx;
