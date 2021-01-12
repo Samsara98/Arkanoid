@@ -339,7 +339,7 @@ public class Arkanoid extends GraphicsProgram {
     }
 
     /**
-     * Method: Hit Bottom Wall
+     * Method: Hit Bottom Wall.
      * -----------------------
      * 判断小球是否击中了底部边界
      */
