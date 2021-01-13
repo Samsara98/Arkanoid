@@ -112,7 +112,7 @@ public class Arkanoid extends GraphicsProgram {
 //        if (StageNum == 1){
         if (StageNum < 2) {
             try {
-                Image bg = ImageIO.read(new FileInputStream("/home/samsara/JAVA/IdeaProjects/arkanoid/src/background.jpg"));
+                Image bg = ImageIO.read(new FileInputStream(".//src//imge1.jpg"));
                 GImage gImage = new GImage(bg);
                 gImage.setSize(540, 360);
                 add(gImage, 50, 0);
@@ -121,7 +121,7 @@ public class Arkanoid extends GraphicsProgram {
             }
         } else {
             try {
-                Image bg = ImageIO.read(new FileInputStream("/home/samsara/JAVA/IdeaProjects/arkanoid/src/imge2.jpg"));
+                Image bg = ImageIO.read(new FileInputStream(".//src//imge2.jpg"));
                 GImage gImage = new GImage(bg);
                 gImage.setSize(540, 360);
                 add(gImage, 50, 0);
@@ -242,14 +242,13 @@ public class Arkanoid extends GraphicsProgram {
                 waitForClick();
                 clear();
                 try {
-                    Image bg = ImageIO.read(new FileInputStream("/home/samsara/JAVA/IdeaProjects/arkanoid/src/imge3.jpg"));
+                    Image bg = ImageIO.read(new FileInputStream(".//src//imge3.jpg"));
                     GImage gImage = new GImage(bg);
                     gImage.setSize(605,720);
                     add(gImage, 5, 10);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                waitForClick();
                 GLabel label0 = new GLabel("Congratulation!");
                 label0.setFont(f);
                 add(label0, 50, 0.5*APPLICATION_HEIGHT);
