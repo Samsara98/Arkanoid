@@ -17,7 +17,7 @@ public class Arkanoid extends GraphicsProgram {
     public static final int APPLICATION_HEIGHT = 800;
 
     /* 动画每一帧间隔10ms*/
-    private static final double DELAY = 1000 / 60.0;
+    private static final double DELAY = 10;
 
     /* 水平速度：每一帧水平方向的移动距离 */
     private static double VELOCITY_Y;
@@ -49,15 +49,15 @@ public class Arkanoid extends GraphicsProgram {
     public static final Color BRICK_COLOR = Color.ORANGE;
 
     // 砖的实心部分宽18,高8
-    public static final int BRICK_WIDTH = 64;
-    public static final int BRICK_HEIGHT = 24;
+    public static final int BRICK_WIDTH = 53;
+    public static final int BRICK_HEIGHT = 50;
 
     // 每块实心砖的上下左右各有宽度为1的空白。
     // 注意：当两块砖挨着的时候，中间的空白有两遍，加起来就是2了。
-    public static final int BRICK_MARGIN = 1;
+    public static final int BRICK_MARGIN = 8;
 
-    static int Brick_Row = 8;
-    static int Brick_Column = 7;
+    static int Brick_Row = 6;
+    static int Brick_Column = 10;
 
     public GObject Obj_;
 
@@ -74,11 +74,16 @@ public class Arkanoid extends GraphicsProgram {
     public static int PADDLE_WIDTH;
     public static int PADDLE_HEIGHT;
 
+    //奖励块
+    GRect Reward;
+    public static double Reward_Width = 20;
+    public static double Reward_Height = 20;
+
     // 生命值
     int Live;
     //得分
     int Score;
-    //砖块分散
+    //击破的砖块数
     int Point;
 
     int StageNum = 1;
@@ -121,8 +126,8 @@ public class Arkanoid extends GraphicsProgram {
         }
         PADDLE_WIDTH = PWIDTH;
         PADDLE_HEIGHT = PHEIGHT;
-        VELOCITY_X = VX * ((StageNum - 1) * 0.2 + 1);
-        VELOCITY_Y = VY * ((StageNum - 1) * 0.2 + 1);
+        VELOCITY_X = VX + (StageNum - 1);
+        VELOCITY_Y = VY + (StageNum - 1);
         Live = 3;
         Point = 0;
         label.setLabel("CLICK TO START");  //游戏信息
@@ -174,6 +179,10 @@ public class Arkanoid extends GraphicsProgram {
 
                 //检查是否撞到砖块
                 checkBrickCollision();
+
+                if (Reward != null){
+                    checkReward();
+                }
 
                 // 移动小球的位置
                 ball.move(vx, vy);
@@ -248,8 +257,7 @@ public class Arkanoid extends GraphicsProgram {
                     paddle.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
                 }
 
-                if ((ballX - obj.getX() > BRICKSCORNER) & (-ballX + PADDLE_WIDTH + obj.getX() > BRICKSCORNER)) { //碰到挡板中间时
-                    vx = (vx > 0) ? VELOCITY_X : -VELOCITY_X;
+                if ((ballX - obj.getX() > BRICKSCORNER) && (-ballX + PADDLE_WIDTH + obj.getX() > BRICKSCORNER)) { //碰到挡板中间时
                     vy = -VELOCITY_Y;
                 } else {  // 碰到挡板边缘
                     vx = -vx;
@@ -292,16 +300,40 @@ public class Arkanoid extends GraphicsProgram {
                         }
                     }
                 }
-//                if (ball.getColor().getRed() > 250 & ball.getColor().getRed() < 500) { //部分颜色砖块可以加速球
-//                    double x = randomGenerator.nextDouble(1, 2);
-//                    vx += (vx > 0) ? x : -x;
-//                    double y = randomGenerator.nextDouble(1, 2);
-//                    vy += (vy > 0) ? y : -y;
-//                }
+                if (ball.getColor().getRed() >= 250 & ball.getColor().getRed() <= 255) { //部分颜色砖块可以加速球
+                    makeReward(obj.getX() + 0.5*BRICK_WIDTH, obj.getY());
+                }
             }
         }
         Obj_ = null;
     }
+
+    //    检测奖励胶囊是否碰到挡板
+    void checkReward(){
+        GObject obj1 = getElementAt(Reward.getX(), Reward.getY()); //球的4个矩形定位点
+        GObject obj2 = getElementAt(Reward.getX() + Reward_Width, Reward.getY());
+        GObject obj3 = getElementAt(Reward.getX(), Reward.getY() + Reward_Height);
+        GObject obj4 = getElementAt(Reward.getX()+ Reward_Width, Reward.getY()+ Reward_Height);
+        List<GObject> list = new ArrayList<>();
+        Collections.addAll(list, obj3, obj4, obj1, obj2);
+        Reward.move(0, VELOCITY_Y*0.5);
+        for (GObject gobj : list) {
+            if (gobj != null  && gobj.getHeight() == PADDLE_HEIGHT) {
+                remove(Reward);
+                Reward = null;
+                PADDLE_WIDTH += 30;
+                paddle.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
+                break;
+            }
+        }
+        if (Reward != null && Reward.getY() > getHeight()){
+            remove(Reward);
+            Reward = null;
+        }
+
+    }
+
+
 
 
     /**
@@ -320,7 +352,7 @@ public class Arkanoid extends GraphicsProgram {
 //        GObject obj8 = getElementAt(ball.getX() + BALL_RADIUS*2, ball.getY() + BALL_RADIUS * 2);
         GObject obj1 = getElementAt(ball.getX(), ball.getY()); //球的4个矩形定位点
         GObject obj2 = getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY());
-        GObject obj3 = getElementAt(ball.getX(), ball.getY() + BALL_RADIUS * 2);
+        GObject obj3 = getElementAt(ball.getX() , ball.getY() + BALL_RADIUS * 2);
         GObject obj4 = getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY() + BALL_RADIUS * 2);
 //        int a = 1;
 //        GObject obj1 = getElementAt(ball.getX()-a, ball.getY()-a); //球的4个定位点
@@ -328,10 +360,10 @@ public class Arkanoid extends GraphicsProgram {
 //        GObject obj3 = getElementAt(ball.getX()-a, ball.getY() + BALL_RADIUS * 2+a);
 //        GObject obj4 = getElementAt(ball.getX() + BALL_RADIUS * 2+a, ball.getY() + BALL_RADIUS * 2+a);
         List<GObject> list = new ArrayList<>();
-        Collections.addAll(list, obj1, obj4, obj2, obj3);
+        Collections.addAll(list, obj1, obj3, obj2, obj4);
 //        HashSet<GObject> list2 = new HashSet<>();
         for (GObject gobj : list) {
-            if (gobj != null) {
+            if (gobj != null && gobj.getHeight() != 360 ) {
                 return gobj;
             }
         }
@@ -399,8 +431,8 @@ public class Arkanoid extends GraphicsProgram {
                 GRect brick = new GRect(BRICK_WIDTH, BRICK_HEIGHT);
                 brick.setFilled(true);
                 brick.setColor(randomGenerator.nextColor());
-                double x = j * (BRICK_MARGIN  + BRICK_WIDTH*1.4) + BRICK_MARGIN;
-                double y = i * (BRICK_MARGIN  + BRICK_HEIGHT*2) + BRICK_MARGIN+10;
+                double x = j * (BRICK_MARGIN  + BRICK_WIDTH) + BRICK_MARGIN+3;
+                double y = i * (BRICK_MARGIN  + BRICK_HEIGHT) + BRICK_MARGIN -2;
                 add(brick, x, y);
             }
         }
@@ -411,6 +443,15 @@ public class Arkanoid extends GraphicsProgram {
         paddle.setFilled(true);
         paddle.setColor(ball.getColor());
         add(paddle, (APPLICATION_WIDTH - PADDLE_WIDTH) * 0.5, APPLICATION_HEIGHT - 50);
+    }
+
+    public void makeReward(double x, double y){
+        if (Reward == null){
+            Reward = new GRect(Reward_Width, Reward_Height);
+            Reward.setFilled(true);
+            Reward.setColor(randomGenerator.nextColor());
+            add(Reward, x, y);
+        }
     }
 
     public void mouseMoved(MouseEvent e) {  //挡板跟随鼠标移动
