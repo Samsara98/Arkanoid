@@ -101,7 +101,7 @@ public class Arkanoid extends GraphicsProgram {
     GLabel label2 = new GLabel("");
     GLabel label3 = new GLabel("");
     GLabel label4 = new GLabel("");
-
+    Font f = new Font("", Font.BOLD, 50);
 
     /**
      * Method: Init
@@ -238,17 +238,21 @@ public class Arkanoid extends GraphicsProgram {
                     vx = randomGenerator.nextChoice(-VELOCITY_X, VELOCITY_X);        // 水平速度
                     vy = -VELOCITY_Y;        // 竖直速度}
                 }
-            } else if (label.getLabel() == ("WTF!You Win The Game!")) {
+            } else if (label.getLabel() == ("You Win The Game!")) {
                 waitForClick();
                 clear();
                 try {
                     Image bg = ImageIO.read(new FileInputStream("/home/samsara/JAVA/IdeaProjects/arkanoid/src/imge3.jpg"));
                     GImage gImage = new GImage(bg);
-                    gImage.setSize(620,1280);
-                    add(gImage, 0, 0);
+                    gImage.setSize(605,720);
+                    add(gImage, 5, 10);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                waitForClick();
+                GLabel label0 = new GLabel("Congratulation!");
+                label0.setFont(f);
+                add(label0, 50, 0.5*APPLICATION_HEIGHT);
             } else {
                 clear();
                 init();
@@ -376,7 +380,7 @@ public class Arkanoid extends GraphicsProgram {
                 VELOCITY_X = 1.5 * VELOCITY_X;
                 VELOCITY_Y = 1.5 * VELOCITY_Y;
                 if (PADDLE_WIDTH >= getWidth()) {
-                    label.setLabel("WTF!You Win The Game!");
+                    label.setLabel("You Win The Game!");
                 }
                 break;
             }
