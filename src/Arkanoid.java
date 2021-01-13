@@ -1,14 +1,13 @@
 import acm.graphics.*;
-import acm.program.*;
+import acm.program.GraphicsProgram;
 import acm.util.RandomGenerator;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 
 public class Arkanoid extends GraphicsProgram {
 
@@ -111,7 +110,7 @@ public class Arkanoid extends GraphicsProgram {
      */
     public void init() {
 //        if (StageNum == 1){
-        if (StageNum > 2) {
+        if (StageNum < 2) {
             try {
                 Image bg = ImageIO.read(new FileInputStream("/home/samsara/JAVA/IdeaProjects/arkanoid/src/background.jpg"));
                 GImage gImage = new GImage(bg);
@@ -131,12 +130,16 @@ public class Arkanoid extends GraphicsProgram {
             }
 
         }
-        PADDLE_WIDTH = PWIDTH;
-        PADDLE_HEIGHT = PHEIGHT;
+        if (StageNum == 1) {
+            PADDLE_WIDTH = PWIDTH;
+            PADDLE_HEIGHT = PHEIGHT;
+        }
         VELOCITY_X = VX + (StageNum - 1);
         VELOCITY_Y = VY + (StageNum - 1);
-        if (null != rb){
+        if (null != rb) {
             remove(rb);
+        }
+        if (null != rb2) {
             remove(rb2);
         }
         rb = null;
@@ -215,23 +218,37 @@ public class Arkanoid extends GraphicsProgram {
                 // 延迟
                 pause(DELAY);
             }
-            waitForClick();
-            if (Point < Brick_Column * Brick_Row) {
-                label.setLabel("");
-                remove(ball);
-                if (null != rb){
-                    remove(rb);
-                    remove(rb2);
+            if (label.getLabel() == "GG") {
+                waitForClick();
+                if (Point < Brick_Column * Brick_Row) {
+                    label.setLabel("");
+                    remove(ball);
+                    if (null != rb) {
+                        remove(rb);
+                        remove(rb2);
+                    }
+                    rb = null;
+                    rb2 = null;
+                    VELOCITY_X = VX;
+                    VELOCITY_Y = VY;
+                    Live -= 1;
+                    paddle.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
+                    label2.setLabel("LIVE = " + "❤❤❤".substring(0, Live));
+                    makeBall();   // 往屏幕上添加小球
+                    vx = randomGenerator.nextChoice(-VELOCITY_X, VELOCITY_X);        // 水平速度
+                    vy = -VELOCITY_Y;        // 竖直速度}
                 }
-                rb = null;
-                rb2 = null;
-                Live -= 1;
-                PADDLE_WIDTH = PWIDTH;
-                paddle.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
-                label2.setLabel("LIVE = " + "❤❤❤".substring(0, Live));
-                makeBall();   // 往屏幕上添加小球
-                vx = randomGenerator.nextChoice(-VELOCITY_X, VELOCITY_X);        // 水平速度
-                vy = -VELOCITY_Y;        // 竖直速度
+            } else if (label.getLabel() == ("WTF!You Win The Game!")) {
+                waitForClick();
+                clear();
+                try {
+                    Image bg = ImageIO.read(new FileInputStream("/home/samsara/JAVA/IdeaProjects/arkanoid/src/imge3.jpg"));
+                    GImage gImage = new GImage(bg);
+                    gImage.setSize(620,1280);
+                    add(gImage, 0, 0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } else {
                 clear();
                 init();
@@ -283,18 +300,13 @@ public class Arkanoid extends GraphicsProgram {
             if (obj.getHeight() == PADDLE_HEIGHT) {  //碰到挡板
                 paddle.setColor(ball.getColor());
                 ball.setColor(BALL_COLOR);
-                if (ball.getColor().getRed() > 250) { //球碰到挡板后
-                    PADDLE_WIDTH += 10;
-                    paddle.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
-                }
-
                 if ((ballX - obj.getX() > BRICKSCORNER) && (-ballX + PADDLE_WIDTH + obj.getX() > BRICKSCORNER)) { //碰到挡板中间时
                     vy = -VELOCITY_Y;
                 } else {  // 碰到挡板边缘
                     vx = -vx;
                     vy = -vy;
                 }
-            } else if (obj.getWidth() == BRICK_WIDTH) {  //碰到砖块
+            } else if (obj.getHeight() == BRICK_HEIGHT) {  //碰到砖块
                 remove(obj);  //小球碰到砖块，砖块消失
                 Score += (Math.abs(vx) - VELOCITY_X) + (Math.abs(vy) - VELOCITY_Y) + 1;  //球速度越快加分越多
                 label3.setLabel("Score = " + Score);
@@ -331,11 +343,11 @@ public class Arkanoid extends GraphicsProgram {
                         }
                     }
                 }
-                if (ball.getColor().getRed() >= 255 & ball.getColor().getRed() <= 255) { //部分颜色砖块可以加速球
+                double a = randomGenerator.nextDouble(0.0, 1.0);
+                if (a >= 1 - 20.0 / (Brick_Row * Brick_Column)) { //部分砖块可以加长挡板和加速球
                     makeReward(obj.getX() + 0.5 * BRICK_WIDTH, obj.getY());
                 }
-                if (ball.getColor().getRed() >= 1 & ball.getColor().getRed() <= 255) {
-                    //部分颜色砖块可以加速球
+                if (a <= 20.0 / (Brick_Row * Brick_Column)) { //部分砖块产生分裂球
                     if (rb == null && rb2 == null) {
                         rb = makeRewardBall(rb, obj.getX(), obj.getY());
                         rb2 = makeRewardBall(rb2, obj.getX() + BRICK_WIDTH - BALL_RADIUS, obj.getY());
@@ -352,15 +364,20 @@ public class Arkanoid extends GraphicsProgram {
         GObject obj2 = getElementAt(Reward.getX() + Reward_Width, Reward.getY());
         GObject obj3 = getElementAt(Reward.getX(), Reward.getY() + Reward_Height);
         GObject obj4 = getElementAt(Reward.getX() + Reward_Width, Reward.getY() + Reward_Height);
-        List<GObject> list = new ArrayList<>();
+        HashSet<GObject> list = new HashSet<>();
         Collections.addAll(list, obj3, obj4, obj1, obj2);
         Reward.move(0, VELOCITY_Y * 0.5);
         for (GObject gobj : list) {
             if (gobj != null && gobj.getHeight() == PADDLE_HEIGHT) {
                 remove(Reward);
                 Reward = null;
-                PADDLE_WIDTH += 30;
+                PADDLE_WIDTH += 300;
                 paddle.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
+                VELOCITY_X = 1.5 * VELOCITY_X;
+                VELOCITY_Y = 1.5 * VELOCITY_Y;
+                if (PADDLE_WIDTH >= getWidth()) {
+                    label.setLabel("WTF!You Win The Game!");
+                }
                 break;
             }
         }
@@ -372,19 +389,13 @@ public class Arkanoid extends GraphicsProgram {
     }
 
     void checkRewardBall(GObject r, int num) {
-        if (null != r){
+        if (null != r) {
             GObject obj1 = getElementAt(r.getX(), r.getY()); //球的4个矩形定位点
             GObject obj2 = getElementAt(r.getX() + BALL_RADIUS, r.getY());
             GObject obj3 = getElementAt(r.getX(), r.getY() + BALL_RADIUS);
             GObject obj4 = getElementAt(r.getX() + BALL_RADIUS, r.getY() + BALL_RADIUS);
-            List<GObject> list = new ArrayList<>();
-            List<GObject> list2 = new ArrayList<>();
-            Collections.addAll(list2, obj3, obj4, obj1, obj2);
-            for (GObject g:list2){
-                if (!list.contains(g)){
-                    list.add(g);
-                }
-            }
+            HashSet<GObject> list = new HashSet<>();
+            Collections.addAll(list, obj3, obj4, obj1, obj2);
             if (num == 1) {
                 r.move(rbx, rby);
             } else {
@@ -417,7 +428,7 @@ public class Arkanoid extends GraphicsProgram {
     }
 
     void checkRewardBall2(GOval g, int num) {
-        if (null != g){
+        if (null != g) {
             if (num == 1) {      // 小球碰到上下墙，反弹
                 if (hitBottomWall(g)) {
                     rby = -rby;
@@ -472,7 +483,7 @@ public class Arkanoid extends GraphicsProgram {
 //        GObject obj2 = getElementAt(ball.getX() + BALL_RADIUS * 2+a, ball.getY()-a);
 //        GObject obj3 = getElementAt(ball.getX()-a, ball.getY() + BALL_RADIUS * 2+a);
 //        GObject obj4 = getElementAt(ball.getX() + BALL_RADIUS * 2+a, ball.getY() + BALL_RADIUS * 2+a);
-        List<GObject> list = new ArrayList<>();
+        HashSet<GObject> list = new HashSet<>();
         Collections.addAll(list, obj1, obj3, obj2, obj4);
 //        HashSet<GObject> list2 = new HashSet<>();
         for (GObject gobj : list) {
@@ -539,11 +550,11 @@ public class Arkanoid extends GraphicsProgram {
     }
 
     public GOval makeRewardBall(GOval g, double x, double y) {
-        RewardBallLive =6;
-        rbx = -VELOCITY_X;
-        rby = -VELOCITY_Y;
-        rb2x = VELOCITY_X;
-        rb2y = -VELOCITY_Y;
+        RewardBallLive = 6;
+        rbx = randomGenerator.nextChoice(-VELOCITY_X - 2, VELOCITY_X + 2);
+        rby = randomGenerator.nextChoice(-VELOCITY_Y - 3, VELOCITY_Y + 3);
+        rb2x = -rbx;
+        rb2y = -VELOCITY_Y - 3;
         double size = BALL_RADIUS;
         g = new GOval(size, size);
         // 设置小球为实心
