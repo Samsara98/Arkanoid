@@ -207,17 +207,18 @@ public class Arkanoid extends GraphicsProgram {
                 lostHP();
             } else if ("You Win The Game!".equals(label.getLabel())) {   //挡板长于游戏界面时触发
                 WinTheGame();
-            } else {   //清除所有砖块时触发
+            } else if ("  NEXT STAGE~".equals(label.getLabel())){   //清除所有砖块进入下一关时触发
                 waitForClick();
-                cleanTheBound();
+                initAndRestart();
             }
         }  //3命用尽时触发
+        waitForClick();
         StageNum = 1;
         Score = 0;
-        cleanTheBound();
+        initAndRestart();
     }
 
-    private void cleanTheBound() {
+    private void initAndRestart() {
         clear();
         init();
         run();
@@ -239,7 +240,7 @@ public class Arkanoid extends GraphicsProgram {
         waitForClick();
         StageNum = 1;
         Score = 0;
-        cleanTheBound();
+        initAndRestart();
     }
 
     private void lostHP() {
@@ -255,7 +256,6 @@ public class Arkanoid extends GraphicsProgram {
             rb2 = null;
             VELOCITY_X = VX;
             VELOCITY_Y = VY;
-            Live -= 1;
             paddle.setSize(PADDLE_WIDTH, PADDLE_HEIGHT);
             label2.setLabel("LIVE = " + "❤❤❤".substring(0, Live));
             makeBall();   // 往屏幕上添加小球
@@ -287,7 +287,8 @@ public class Arkanoid extends GraphicsProgram {
     void checkCollision() {
         // 小球碰到上墙，反弹,碰到地板gg
         if (hitBottomWall(ball)) {
-            if (Live == 1) {
+            Live -= 1;
+            if (Live <= 0) {
                 label.setLabel("CLICK TO  RESTART");
             } else {
                 label.setLabel("GG");
@@ -361,10 +362,14 @@ public class Arkanoid extends GraphicsProgram {
             }
         }
         double a = randomGenerator.nextDouble(0.0, 1.0);
+        easterEgg(obj, a);
+    }
+
+    private void easterEgg(GObject obj, double a) {
         if (a >= 1 - 20.0 / (Brick_Row * Brick_Column)) {   //打破砖块概率加长挡板胶囊和加快球速
             makeReward(obj.getX() + 0.5 * BRICK_WIDTH, obj.getY());
         }
-        if (a <= 30.0 / (Brick_Row * Brick_Column)) {  //打破砖块概率产生分裂球
+        if (a <= 50.0 / (Brick_Row * Brick_Column)) {  //打破砖块概率产生分裂球
             if (rb == null && rb2 == null) {
                 rb = makeRewardBall(obj.getX(), obj.getY());
                 rb2 = makeRewardBall(obj.getX() + BRICK_WIDTH - BALL_RADIUS, obj.getY());
